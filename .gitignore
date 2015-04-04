@@ -1,0 +1,7 @@
+*.suo
+*.[Cc]lass
+*.[Cc]ache
+*.dat
+
+[Bb]in/
+[Oo]bj/
