@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace GossipBook.Services.Models
+﻿namespace GossipBook.Services.Models
 {
-    // Models returned by AccountController actions.
+    using System;
+    using System.Collections.Generic;
 
     public class ExternalLoginViewModel
     {
