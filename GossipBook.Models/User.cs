@@ -12,16 +12,16 @@
     {
         private ICollection<User> friends;
         private ICollection<Group> groups;
-        private Wall wall;
         private ICollection<Post> posts;
-        private ICollection<Comment> comment;
+        private ICollection<Comment> comments;
+        private Wall wall;
 
         public User()
         {
             this.friends = new HashSet<User>();
             this.groups = new HashSet<Group>();
             this.posts = new HashSet<Post>();
-            this.comment = new List<Comment>();
+            this.comments = new HashSet<Comment>();
             this.wall = new Wall();
         }
 
@@ -52,10 +52,10 @@
             set { this.posts = value; }
         }
 
-        public virtual ICollection<Comment> Comment
+        public virtual ICollection<Comment> Comments
         {
-            get { return this.comment; }
-            set { this.comment = value; }
+            get { return this.comments; }
+            set { this.comments = value; }
         }
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<User> manager, string authenticationType)

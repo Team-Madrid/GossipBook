@@ -1,4 +1,6 @@
-﻿namespace GossipBook.Services.Controllers
+﻿using System;
+
+namespace GossipBook.Services.Controllers
 {
     using System.Web.Http;
     using GossipBook.Data;
@@ -10,6 +12,21 @@
         protected BaseController(IGossipBookDbContext db = null)
         {
             this.db = db ?? new GossipBookDbContext();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                var dbAsIDisposable = this.db as IDisposable;
+                if (dbAsIDisposable != null)
+                {
+                    dbAsIDisposable.Dispose();
+                    this.db = null;
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

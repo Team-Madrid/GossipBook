@@ -1,4 +1,6 @@
-﻿namespace GossipBook.Services.Controllers
+﻿using System.Linq;
+
+namespace GossipBook.Services.Controllers
 {
     using System;
     using System.Collections.Generic;
@@ -10,29 +12,24 @@
     using System.Web.Http;
 
     using Microsoft.AspNet.Identity;
-    using Microsoft.AspNet.Identity.EntityFramework;
     using Microsoft.AspNet.Identity.Owin;
     using Microsoft.Owin.Security;
     using Microsoft.Owin.Security.Cookies;
-    using Microsoft.Owin.Security.OAuth;
 
     using GossipBook.Models;
     using GossipBook.Services.Models;
-    using GossipBook.Services.Providers;
-    using GossipBook.Services.Results;
 
     [Authorize]
-    [RoutePrefix("api/Account")]
-    public class AccountController : ApiController
+    public class UserController : BaseController
     {
         private const string LocalLoginProvider = "Local";
         private ApplicationUserManager userManager;
 
-        public AccountController()
+        public UserController()
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ISecureDataFormat<AuthenticationTicket> accessTokenFormat)
+        public UserController(ApplicationUserManager userManager, ISecureDataFormat<AuthenticationTicket> accessTokenFormat)
         {
             this.UserManager = userManager;
             this.AccessTokenFormat = accessTokenFormat;
@@ -42,7 +39,7 @@
         {
             get
             {
-                return this.userManager ?? Request.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                return this.userManager ?? this.Request.GetOwinContext().GetUserManager<ApplicationUserManager>();
             }
             private set
             {
@@ -52,66 +49,105 @@
 
         public ISecureDataFormat<AuthenticationTicket> AccessTokenFormat { get; private set; }
 
-        // POST api/Account/Register
+        [HttpGet]
+        [Route("api/Users")]
+        public IHttpActionResult GetAll()
+        {
+            var users = this.db.Users
+                .Select(u => new { u.Id, u.UserName })
+                .ToList();
+
+            return this.Ok(users);
+        }
+
         [AllowAnonymous]
         public async Task<IHttpActionResult> Register(RegisterDataModel model)
         {
-            if (!ModelState.IsValid)
+            if (!this.ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return this.BadRequest(this.ModelState);
             }
 
             var user = new User { UserName = model.Username, Email = model.Email };
 
-            IdentityResult result = await UserManager.CreateAsync(user, model.Password);
+            var result = await this.UserManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
             {
-                return GetErrorResult(result);
+                return this.GetErrorResult(result);
             }
 
-            return Ok();
+            return this.Ok();
         }
 
-        // POST api/Account/ChangePassword
-        public async Task<IHttpActionResult> ChangePassword(ChangePasswordDataModel model)
+        [Route("api/AddFriend/{id}")]
+        public IHttpActionResult AddFriend(string id)
         {
-            if (!ModelState.IsValid)
+            var user = this.db.Users.Find(id);
+            if (user == null)
             {
-                return BadRequest(ModelState);
+                return this.BadRequest("A user with the provided id do not exist.");
             }
 
-            IdentityResult result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword,
-                model.NewPassword);
+            var currentUserId = this.User.Identity.GetUserId();
+            if (user.Id == currentUserId)
+            {
+                return this.BadRequest("You cannot be friend with yourself.");
+            }
+
+            var currentUser = this.db.Users.Find(currentUserId);
+            if (currentUser == null)
+            {
+                return this.Unauthorized();
+            }
+
+            if (currentUser.Friends.Contains(user))
+            {
+                return this.Ok("This user is already your friend.");
+            }
+
+            currentUser.Friends.Add(user);
+            this.db.SaveChanges();
+
+            return this.Ok("Friend successfully added.");
+        }
+
+        public async Task<IHttpActionResult> ChangePassword(ChangePasswordDataModel model)
+        {
+            if (!this.ModelState.IsValid)
+            {
+                return this.BadRequest(this.ModelState);
+            }
+
+            var result = await this.UserManager.ChangePasswordAsync(this.User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
 
             if (!result.Succeeded)
             {
-                return GetErrorResult(result);
+                return this.GetErrorResult(result);
             }
 
-            return Ok();
+            return this.Ok();
+        }
+
+        public IHttpActionResult Logout()
+        {
+            this.Authentication.SignOut(CookieAuthenticationDefaults.AuthenticationType);
+            return this.Ok();
         }
 
         // GET api/Account/UserInfo
-        [HostAuthentication(DefaultAuthenticationTypes.ExternalBearer)]
-        public UserInfoViewModel GetUserInfo()
-        {
-            ExternalLoginData externalLogin = ExternalLoginData.FromIdentity(User.Identity as ClaimsIdentity);
+        //[HostAuthentication(DefaultAuthenticationTypes.ExternalBearer)]
+        //public UserInfoViewModel GetUserInfo()
+        //{
+        //    ExternalLoginData externalLogin = ExternalLoginData.FromIdentity(User.Identity as ClaimsIdentity);
 
-            return new UserInfoViewModel
-            {
-                Email = User.Identity.GetUserName(),
-                HasRegistered = externalLogin == null,
-                LoginProvider = externalLogin != null ? externalLogin.LoginProvider : null
-            };
-        }
-
-        // POST api/Account/Logout
-        public IHttpActionResult Logout()
-        {
-            Authentication.SignOut(CookieAuthenticationDefaults.AuthenticationType);
-            return Ok();
-        }
+        //    return new UserInfoViewModel
+        //    {
+        //        Email = User.Identity.GetUserName(),
+        //        HasRegistered = externalLogin == null,
+        //        LoginProvider = externalLogin != null ? externalLogin.LoginProvider : null
+        //    };
+        //}
 
         // GET api/Account/ManageInfo?returnUrl=%2F&generateState=true
         //[Route("ManageInfo")]
@@ -385,14 +421,14 @@
 
         private IAuthenticationManager Authentication
         {
-            get { return Request.GetOwinContext().Authentication; }
+            get { return this.Request.GetOwinContext().Authentication; }
         }
 
         private IHttpActionResult GetErrorResult(IdentityResult result)
         {
             if (result == null)
             {
-                return InternalServerError();
+                return this.InternalServerError();
             }
 
             if (!result.Succeeded)
@@ -401,17 +437,17 @@
                 {
                     foreach (string error in result.Errors)
                     {
-                        ModelState.AddModelError("", error);
+                        this.ModelState.AddModelError("", error);
                     }
                 }
 
-                if (ModelState.IsValid)
+                if (this.ModelState.IsValid)
                 {
                     // No ModelState errors are available to send, so just return an empty BadRequest.
-                    return BadRequest();
+                    return this.BadRequest();
                 }
 
-                return BadRequest(ModelState);
+                return this.BadRequest(this.ModelState);
             }
 
             return null;
@@ -467,7 +503,7 @@
 
         private static class RandomOAuthStateGenerator
         {
-            private static RandomNumberGenerator _random = new RNGCryptoServiceProvider();
+            private static RandomNumberGenerator random = new RNGCryptoServiceProvider();
 
             public static string Generate(int strengthInBits)
             {
@@ -481,7 +517,7 @@
                 int strengthInBytes = strengthInBits / bitsPerByte;
 
                 byte[] data = new byte[strengthInBytes];
-                _random.GetBytes(data);
+                random.GetBytes(data);
                 return HttpServerUtility.UrlTokenEncode(data);
             }
         }

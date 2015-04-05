@@ -14,5 +14,7 @@
         IDbSet<Comment> Comments { get; }
 
         IDbSet<User> Users { get; }
+
+        int SaveChanges();
     }
 }
