@@ -1,7 +1,6 @@
-﻿using System;
-
 namespace GossipBook.Services.Controllers
 {
+    using System;
     using System.Web.Http;
     using GossipBook.Data;
 
