@@ -2,26 +2,39 @@ namespace GossipBook.Services.Controllers
 {
     using System;
     using System.Web.Http;
+    using System.Threading;
     using GossipBook.Data;
+    using GossipBook.Models;
+    using Microsoft.AspNet.Identity;
 
     public abstract class BaseController : ApiController
     {
-        protected IGossipBookDbContext db;
-
         protected BaseController(IGossipBookDbContext db = null)
         {
-            this.db = db ?? new GossipBookDbContext();
+            this.Db = db ?? new GossipBookDbContext();
+        }
+
+        protected IGossipBookDbContext Db { get; private set; }
+
+        protected string GetCurrentUserId()
+        {
+            return Thread.CurrentPrincipal.Identity.GetUserId();
+        }
+
+        protected User GetCurrentUser()
+        {
+            return this.Db.Users.Find(this.GetCurrentUserId());
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                var dbAsIDisposable = this.db as IDisposable;
+                var dbAsIDisposable = this.Db as IDisposable;
                 if (dbAsIDisposable != null)
                 {
                     dbAsIDisposable.Dispose();
-                    this.db = null;
+                    this.Db = null;
                 }
             }
 

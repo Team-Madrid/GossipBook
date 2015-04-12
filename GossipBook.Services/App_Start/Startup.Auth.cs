@@ -32,9 +32,9 @@
             PublicClientId = "self";
             OAuthOptions = new OAuthAuthorizationServerOptions
             {
-                TokenEndpointPath = new PathString("/api/User/Login"),
+                TokenEndpointPath = new PathString("/api/Login"),
                 Provider = new ApplicationOAuthProvider(PublicClientId),
-                AuthorizeEndpointPath = new PathString("/api/User/ExternalLogin"),
+                AuthorizeEndpointPath = new PathString("/api/ExternalLogin"),
                 AccessTokenExpireTimeSpan = TimeSpan.FromDays(7),
                 AllowInsecureHttp = true
             };
