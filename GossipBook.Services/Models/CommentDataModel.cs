@@ -2,7 +2,7 @@
 {
     using System.ComponentModel.DataAnnotations;
 
-    public class PostDataModel
+    public class CommentDataModel
     {
         [Required]
         public string Content { get; set; }

@@ -5,11 +5,6 @@
 
     public class Comment
     {
-        public Comment()
-        {
-            this.PostedAt = DateTime.Now;
-        }
-
         public int Id { get; set; }
 
         [Required]

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Web;
-using System.Web.Http;
-using GossipBook.Models;
-using GossipBook.Services.Models;
-using Microsoft.AspNet.Identity;
-
-namespace GossipBook.Services.Controllers
+﻿namespace GossipBook.Services.Controllers
 {
+    using System;
+    using System.Linq;
+    using System.Web.Http;
+    using GossipBook.Models;
+    using GossipBook.Services.Models;
+
     [Authorize]
     public class GroupsController : BaseController
     {
@@ -23,7 +19,7 @@ namespace GossipBook.Services.Controllers
 
             return this.Ok(groups);
         }
-
+        
         [HttpGet]
         [Route("api/Groups/{name}")]
         public IHttpActionResult GetGroupInfo(string name)
@@ -39,9 +35,17 @@ namespace GossipBook.Services.Controllers
                 Members = group.Users.Select(u => u.UserName),
                 Wall = group.Wall.Posts.Select(p => new
                 {
+                    p.Id,
                     p.Content,
                     p.PostedAt,
-                    p.User.UserName
+                    p.User.UserName,
+                    Comments = p.Comments.Select(c => new
+                    {
+                        c.Id,
+                        c.Content,
+                        c.PostedAt,
+                        c.User.UserName
+                    })
                 })
             };
 
@@ -49,10 +53,9 @@ namespace GossipBook.Services.Controllers
         }
         
         [HttpPost]
-        [Route("api/Groups")]
         public IHttpActionResult Create(GroupDataModel groupDataModel)
         {
-            if (groupDataModel == null || !this.ModelState.IsValid)
+            if (groupDataModel == null || !this.ModelState.IsValid || string.IsNullOrWhiteSpace(groupDataModel.Name))
             {
                 return this.BadRequest("The group name is requred.");
             }
@@ -64,7 +67,8 @@ namespace GossipBook.Services.Controllers
 
             var newGroup = new Group
             {
-                Name = groupDataModel.Name
+                Name = groupDataModel.Name,
+                Wall = new Wall()
             };
 
             newGroup.Users.Add(this.GetCurrentUser());
@@ -73,6 +77,32 @@ namespace GossipBook.Services.Controllers
 
             return this.Ok("Successfuly created group " + newGroup.Name);
         }
+
+        [HttpPut]
+        public IHttpActionResult Rename(int id, GroupDataModel groupDataModel)
+        {
+            var group = this.Db.Groups.Find(id);
+            if (group == null)
+            {
+                return this.BadRequest("There is no such group.");
+            }
+
+            if (groupDataModel == null || !this.ModelState.IsValid || string.IsNullOrWhiteSpace(groupDataModel.Name))
+            {
+                return this.BadRequest("The group name is requred.");
+            }
+
+            if (this.Db.Groups.Any(g => g.Name == groupDataModel.Name))
+            {
+                return this.BadRequest("This name is already taken.");
+            }
+
+            group.Name = groupDataModel.Name;
+            this.Db.SaveChanges();
+
+            return this.Ok("Successfuly renamed group " + group.Name);
+        }
+
 
         [HttpPost]
         [Route("api/Groups/Join/{name}")]
@@ -116,6 +146,41 @@ namespace GossipBook.Services.Controllers
             this.Db.SaveChanges();
 
             return this.Ok("Successfully left group " + group.Name);
+        }
+
+        [HttpPost]
+        [Route("api/Groups/AddPost/{name}")]
+        public IHttpActionResult PostOnWall(string name, PostDataModel postDataModel)
+        {
+            var group = this.Db.Groups.FirstOrDefault(g => g.Name == name);
+            if (group == null)
+            {
+                return this.BadRequest("There is no such group.");
+            }
+
+            if (postDataModel == null || string.IsNullOrWhiteSpace(postDataModel.Content))
+            {
+                return this.BadRequest("You must provide post content.");
+            }
+
+            var currentUser = this.GetCurrentUser();
+            if (!group.Users.Contains(currentUser))
+            {
+                return this.BadRequest("You must join the group first.");
+            }
+
+            var newPost = new Post
+            {
+                Content = postDataModel.Content,
+                UserId = currentUser.Id,
+                WallId = group.WallId,
+                PostedAt = DateTime.Now
+            };
+
+            this.Db.Posts.Add(newPost);
+            this.Db.SaveChanges();
+
+            return this.Ok("Post added successfully.");
         }
     }
 }

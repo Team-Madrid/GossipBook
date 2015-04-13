@@ -11,7 +11,6 @@
         public Post()
         {
             this.comments = new HashSet<Comment>();
-            this.PostedAt = DateTime.Now;
         }
 
         public int Id { get; set; }

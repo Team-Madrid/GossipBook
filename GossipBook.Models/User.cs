@@ -4,7 +4,6 @@
     using System.ComponentModel.DataAnnotations;
     using System.Security.Claims;
     using System.Threading.Tasks;
-
     using Microsoft.AspNet.Identity;
     using Microsoft.AspNet.Identity.EntityFramework;
 
@@ -14,7 +13,6 @@
         private ICollection<Group> groups;
         private ICollection<Post> posts;
         private ICollection<Comment> comments;
-        private Wall wall;
 
         public User()
         {
@@ -22,17 +20,12 @@
             this.groups = new HashSet<Group>();
             this.posts = new HashSet<Post>();
             this.comments = new HashSet<Comment>();
-            this.wall = new Wall();
         }
 
         [Required]
         public int WallId { get; set; }
 
-        public virtual Wall Wall
-        {
-            get { return this.wall; }
-            set { this.wall = value;  }
-        }
+        public virtual Wall Wall { get; set; }
 
         public virtual ICollection<User> Friends
         {
