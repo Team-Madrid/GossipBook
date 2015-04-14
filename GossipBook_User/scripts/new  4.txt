@@ -1,0 +1,26 @@
+$.ajax({
+			url:"http://localhost:26089/api/Register",
+			type: "Post",
+    dataType: 'jsonp',
+			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+			data: JSON.stringify({
+        Username: "veve",
+		Email: "veve@sasa.bg",
+        Password: "qwerty",
+        ConfirmPassword: "qwerty"}),
+                        processData: true,
+			success: function() { console.log("br br")},
+			error: function() { console.log("br")}
+		});
+		
+$.ajax({
+
+    url:"http://gossipbook.azurewebsites.net/Register",
+    data: JSON.stringify({username:"pesho", password:"1234"}),
+    type: 'POST',
+ crossDomain: true,
+    dataType: 'jsonp',
+ contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+    success: function() { alert("Success"); },
+    error: function() { alert('Failed!'); }
+});
