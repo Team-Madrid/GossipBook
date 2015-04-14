@@ -8,8 +8,6 @@
     {
         public static void Register(HttpConfiguration config)
         {
-            config.EnableCors(new EnableCorsAttribute("*", "*", "*"));
-
             config.SuppressDefaultHostAuthentication();
             config.Filters.Add(new HostAuthenticationFilter(OAuthDefaults.AuthenticationType));
 
@@ -20,6 +18,8 @@
                 "api/{controller}/{action}/{id}",
                 new { id = RouteParameter.Optional }
             );
+
+            config.EnableCors();
         }
     }
 }

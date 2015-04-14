@@ -8,6 +8,7 @@
     using GossipBook.Services.Models;
 
     [Authorize]
+    [EnableCors("*", "*", "*")]
     public class CommentsController : BaseController
     {
         [HttpGet]
