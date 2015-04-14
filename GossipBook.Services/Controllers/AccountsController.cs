@@ -12,7 +12,6 @@
     using GossipBook.Services.Models;
 
     [Authorize]
-    [EnableCors("*", "*", "*")]
     public class AccountsController : ApiController
     {
         private ApplicationUserManager userManager;

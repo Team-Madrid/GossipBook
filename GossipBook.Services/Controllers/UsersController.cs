@@ -7,7 +7,6 @@
     using GossipBook.Models;
     using GossipBook.Services.Models;
 
-    [EnableCors("*", "*", "*")]
     [Authorize]
     public class UsersController : BaseController
     {

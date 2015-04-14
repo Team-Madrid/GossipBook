@@ -10,7 +10,6 @@
     using GossipBook.Services.Models;
 
     [Authorize]
-    [EnableCors("*", "*", "*")]
     public class PostsController : BaseController
     {
         [HttpGet]
