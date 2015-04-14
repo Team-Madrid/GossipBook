@@ -2,6 +2,7 @@
 *.[Cc]lass
 *.[Cc]ache
 *.dat
+*.[Uu]ser
 
 [Bb]in/
 [Oo]bj/
