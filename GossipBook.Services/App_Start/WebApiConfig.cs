@@ -17,6 +17,8 @@
                 "api/{controller}/{action}/{id}",
                 new { id = RouteParameter.Optional }
             );
+
+            config.EnableCors();
         }
     }
 }

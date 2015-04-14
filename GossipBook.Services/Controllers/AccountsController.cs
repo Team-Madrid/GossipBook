@@ -3,6 +3,7 @@
     using System.Net.Http;
     using System.Threading.Tasks;
     using System.Web.Http;
+    using System.Web.Http.Cors;
 
     using Microsoft.AspNet.Identity;
     using Microsoft.AspNet.Identity.Owin;
@@ -11,6 +12,7 @@
     using GossipBook.Services.Models;
 
     [Authorize]
+    [EnableCors("*", "*", "*")]
     public class AccountsController : ApiController
     {
         private ApplicationUserManager userManager;

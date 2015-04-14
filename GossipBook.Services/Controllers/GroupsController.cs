@@ -3,10 +3,12 @@
     using System;
     using System.Linq;
     using System.Web.Http;
+    using System.Web.Http.Cors;
     using GossipBook.Models;
     using GossipBook.Services.Models;
 
     [Authorize]
+    [EnableCors("*", "*", "*")]
     public class GroupsController : BaseController
     {
         [HttpGet]
