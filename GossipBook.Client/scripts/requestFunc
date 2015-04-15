@@ -18,7 +18,7 @@ $(function() {
         showAnyAndHideOther("welcomeForm");
     });
     
-    $("#toPhonebook").on("click", function() {
+    $("#toGossipBook").on("click", function() {
         showMenuAndAny("phones");
         
         numberTable();
@@ -28,7 +28,7 @@ $(function() {
         EditNumber(); 
     });
 
-    $("#backToPhonebook").on("click", function() {
+    $("#backToGossipBook").on("click", function() {
         showMenuAndAny("phones");
         
         numberTable();
